@@ -1,0 +1,42 @@
+#sample{
+	color : red;
+    margin-top:50px;
+}
+
+#sasa,#dbupdata {
+    display: inline;
+    border: none;
+    margin-left: -40px;
+    padding: 0px;
+    float:left;
+    position:absolute;
+    left:40%;
+    width:300px;
+}
+#updata{
+    display: inline;
+    border: none;
+    margin: 0px;
+    padding: 0px;
+    float:left;
+    position:absolute;
+    left:50%;
+}
+#dbinput {
+    display: inline;
+    margin: 0px;
+    padding: 0px;
+    position:absolute;
+    overflow:hidden;
+}
+
+#aaa {
+    display: inline;
+    margin-left: 20px;
+    padding-left: 20px;
+    position:absolute;
+    overflow:hidden;
+}
+#indata{
+    width:70px;
+}

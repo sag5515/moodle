@@ -1,0 +1,611 @@
+<?php
+
+// This file is part of Moodle - http://moodle.org/
+//
+// Moodle is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// Moodle is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+
+/**
+ * This file keeps track of upgrades to the aojtools module
+ *
+ * Sometimes, changes between versions involve alterations to database
+ * structures and other major things that may break installations. The upgrade
+ * function in this file will attempt to perform all the necessary actions to
+ * upgrade your older installation to the current version. If there's something
+ * it cannot do itself, it will tell you what you need to do.  The commands in
+ * here will all be database-neutral, using the functions defined in DLL libraries.
+ *
+ * @package    mod_aojtools
+ * @copyright  2011 Your Name
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
+
+defined('MOODLE_INTERNAL') || die();
+
+/**
+ * Execute aojtools upgrade from the given old version
+ *
+ * @param int $oldversion
+ * @return bool
+ */
+function xmldb_aojtools_upgrade($oldversion) {
+    global $DB;
+
+    $dbman = $DB->get_manager(); // loads ddl manager and xmldb classes
+
+    // And upgrade begins here. For each one, you'll need one
+    // block of code similar to the next one. Please, delete
+    // this comment lines once this file start handling proper
+    // upgrade code.
+
+    // if ($oldversion < YYYYMMDD00) { //New version in version.php
+    //
+    // }
+
+    // Lines below (this included)  MUST BE DELETED once you get the first version
+    // of your module ready to be installed. They are here only
+    // for demonstrative purposes and to show how the aojtools
+    // iself has been upgraded.
+
+    // For each upgrade block, the file aojtools/version.php
+    // needs to be updated . Such change allows Moodle to know
+    // that this file has to be processed.
+
+    // To know more about how to write correct DB upgrade scripts it's
+    // highly recommended to read information available at:
+    //   http://docs.moodle.org/en/Development:XMLDB_Documentation
+    // and to play with the XMLDB Editor (in the admin menu) and its
+    // PHP generation posibilities.
+
+    // First example, some fields were added to install.xml on 2007/04/01
+    if ($oldversion < 2007040400) {
+
+        // Define field course to be added to aojtools
+        $table = new xmldb_table('aojtools');
+        $field = new xmldb_field('course', XMLDB_TYPE_INTEGER, '10', XMLDB_UNSIGNED, XMLDB_NOTNULL, null, '0', 'id');
+
+        // Add field course
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        // Define field intro to be added to aojtools
+        $table = new xmldb_table('aojtools');
+        $field = new xmldb_field('intro', XMLDB_TYPE_TEXT, 'medium', null, null, null, null,'name');
+
+        // Add field intro
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        // Define field introformat to be added to aojtools
+        $table = new xmldb_table('aojtools');
+        $field = new xmldb_field('introformat', XMLDB_TYPE_INTEGER, '4', XMLDB_UNSIGNED, XMLDB_NOTNULL, null, '0',
+            'intro');
+
+        // Add field introformat
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        // Once we reach this point, we can store the new version and consider the module
+        // upgraded to the version 2007040100 so the next time this block is skipped
+        upgrade_mod_savepoint(true, 2007040100, 'aojtools');
+    }
+
+    // Second example, some hours later, the same day 2007/04/01
+    // two more fields and one index were added to install.xml (note the micro increment
+    // "01" in the last two digits of the version
+    if ($oldversion < 2010040403) {
+
+        // Define field timecreated to be added to aojtools
+        $table = new xmldb_table('aojtools');
+        $field = new xmldb_field('timecreated', XMLDB_TYPE_INTEGER, '10', XMLDB_UNSIGNED, XMLDB_NOTNULL, null, '0',
+            'introformat');
+
+        // Add field timecreated
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        // Define field timemodified to be added to aojtools
+        $table = new xmldb_table('aojtools');
+        $field = new xmldb_field('timemodified', XMLDB_TYPE_INTEGER, '10', XMLDB_UNSIGNED, XMLDB_NOTNULL, null, '0',
+            'timecreated');
+
+        // Add field timemodified
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        // Define index course (not unique) to be added to aojtools
+        $table = new xmldb_table('aojtools');
+        $index = new xmldb_index('courseindex', XMLDB_INDEX_NOTUNIQUE, array('course'));
+
+        // Add index to course field
+        if (!$dbman->index_exists($table, $index)) {
+            $dbman->add_index($table, $index);
+        }
+
+//------------------------------------------
+	$field = new xmldb_field('period', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0', 'timemodified');
+
+        // Conditionally launch add field period.
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        $field = new xmldb_field('starttime', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0', 'period');
+
+        // Conditionally launch add field starttime.
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        $field = new xmldb_field('finishtime', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0', 'starttime');
+
+        // Conditionally launch add field finishtime.
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        $field = new xmldb_field('problem_a', XMLDB_TYPE_TEXT, null, null, XMLDB_NOTNULL, null, null, 'finishtime');
+
+        // Conditionally launch add field problem_a.
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        $field = new xmldb_field('problem_b', XMLDB_TYPE_TEXT, null, null, XMLDB_NOTNULL, null, null, 'problem_a');
+
+        // Conditionally launch add field problem_b.
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        $field = new xmldb_field('problem_c', XMLDB_TYPE_TEXT, null, null, XMLDB_NOTNULL, null, null, 'problem_b');
+
+        // Conditionally launch add field problem_c.
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        $field = new xmldb_field('problem_d', XMLDB_TYPE_TEXT, null, null, XMLDB_NOTNULL, null, null, 'problem_c');
+
+        // Conditionally launch add field problem_d.
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        $field = new xmldb_field('problem_e', XMLDB_TYPE_TEXT, null, null, XMLDB_NOTNULL, null, null, 'problem_d');
+
+        // Conditionally launch add field problem_e.
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        $field = new xmldb_field('problem_f', XMLDB_TYPE_TEXT, null, null, XMLDB_NOTNULL, null, null, 'problem_e');
+
+        // Conditionally launch add field problem_f.
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        $field = new xmldb_field('problem_g', XMLDB_TYPE_TEXT, null, null, XMLDB_NOTNULL, null, null, 'problem_f');
+
+        // Conditionally launch add field problem_g.
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        $field = new xmldb_field('problem_h', XMLDB_TYPE_TEXT, null, null, XMLDB_NOTNULL, null, null, 'problem_g');
+
+        // Conditionally launch add field problem_h.
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        $field = new xmldb_field('problem_i', XMLDB_TYPE_TEXT, null, null, XMLDB_NOTNULL, null, null, 'problem_h');
+
+        // Conditionally launch add field problem_i.
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+        $field = new xmldb_field('problem_j', XMLDB_TYPE_TEXT, null, null, XMLDB_NOTNULL, null, null, 'problem_i');
+
+        // Conditionally launch add field problem_j.
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+//------------------------------------------
+
+        // Another save point reached
+        upgrade_mod_savepoint(true, 2010040403, 'aojtools');
+    }
+
+    // Third example, the next day, 2007/04/02 (with the trailing 00), some actions were performed to install.php,
+    // related with the module
+    if ($oldversion < 2007040200) {
+//-------------------------------------------------------------------------------------------------------------------------------
+	
+	$table = new xmldb_table('aojproblemlist');
+
+        $field = new xmldb_field('courseid', XMLDB_TYPE_INTEGER, '10', XMLDB_UNSIGNED, XMLDB_NOTNULL, null, '0', 'id');
+
+        // Add field course
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        $field = new xmldb_field('userid', XMLDB_TYPE_CHAR, '255', XMLDB_UNSIGNED, XMLDB_NOTNULL, null, 'null', 'courseid');
+
+        // Add field course
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+
+       $field = new xmldb_field('timemodified', XMLDB_TYPE_INTEGER, '10', XMLDB_UNSIGNED, XMLDB_NOTNULL, null, '0','courseid');
+
+        // Add field timemodified
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+ 	$field = new xmldb_field('problem_a', XMLDB_TYPE_TEXT, null, null, XMLDB_NOTNULL, null, null, 'timemodified');
+
+        // Conditionally launch add field problem_a.
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        $field = new xmldb_field('problem_b', XMLDB_TYPE_TEXT, null, null, XMLDB_NOTNULL, null, null, 'problem_a');
+
+        // Conditionally launch add field problem_b.
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        $field = new xmldb_field('problem_c', XMLDB_TYPE_TEXT, null, null, XMLDB_NOTNULL, null, null, 'problem_b');
+
+        // Conditionally launch add field problem_c.
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        $field = new xmldb_field('problem_d', XMLDB_TYPE_TEXT, null, null, XMLDB_NOTNULL, null, null, 'problem_c');
+
+        // Conditionally launch add field problem_d.
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        $field = new xmldb_field('problem_e', XMLDB_TYPE_TEXT, null, null, XMLDB_NOTNULL, null, null, 'problem_d');
+
+        // Conditionally launch add field problem_e.
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        $field = new xmldb_field('problem_f', XMLDB_TYPE_TEXT, null, null, XMLDB_NOTNULL, null, null, 'problem_e');
+
+        // Conditionally launch add field problem_f.
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        $field = new xmldb_field('problem_g', XMLDB_TYPE_TEXT, null, null, XMLDB_NOTNULL, null, null, 'problem_f');
+
+        // Conditionally launch add field problem_g.
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        $field = new xmldb_field('problem_h', XMLDB_TYPE_TEXT, null, null, XMLDB_NOTNULL, null, null, 'problem_g');
+
+        // Conditionally launch add field problem_h.
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        $field = new xmldb_field('problem_i', XMLDB_TYPE_TEXT, null, null, XMLDB_NOTNULL, null, null, 'problem_h');
+
+        // Conditionally launch add field problem_i.
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+        $field = new xmldb_field('problem_j', XMLDB_TYPE_TEXT, null, null, XMLDB_NOTNULL, null, null, 'problem_i');
+
+        // Conditionally launch add field problem_j.
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+	
+        // insert here code to perform some actions (same as in install.php)
+
+        upgrade_mod_savepoint(true, 2007040200, 'aojproblemlist');
+//---------------------------------------------------------------------------------------------------------------------------
+    }
+
+    if ($oldversion < 2010040501) {
+
+        // Define table aojproblemlist to be created.
+        $table = new xmldb_table('aojproblemlist');
+
+        // Adding fields to table aojproblemlist.
+        $table->add_field('id', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, XMLDB_SEQUENCE, null);
+        $table->add_field('courseid', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, null);
+        $table->add_field('userid', XMLDB_TYPE_CHAR, '255', null, XMLDB_NOTNULL, null, null);
+        $table->add_field('timemodified', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0');
+        $table->add_field('problem_a', XMLDB_TYPE_TEXT, null, null, XMLDB_NOTNULL, null, null);
+        $table->add_field('problem_b', XMLDB_TYPE_TEXT, null, null, XMLDB_NOTNULL, null, null);
+        $table->add_field('problem_c', XMLDB_TYPE_TEXT, null, null, XMLDB_NOTNULL, null, null);
+        $table->add_field('problem_d', XMLDB_TYPE_TEXT, null, null, XMLDB_NOTNULL, null, null);
+        $table->add_field('problem_e', XMLDB_TYPE_TEXT, null, null, XMLDB_NOTNULL, null, null);
+        $table->add_field('problem_f', XMLDB_TYPE_TEXT, null, null, XMLDB_NOTNULL, null, null);
+        $table->add_field('problem_g', XMLDB_TYPE_TEXT, null, null, XMLDB_NOTNULL, null, null);
+        $table->add_field('problem_h', XMLDB_TYPE_TEXT, null, null, XMLDB_NOTNULL, null, null);
+        $table->add_field('problem_i', XMLDB_TYPE_TEXT, null, null, XMLDB_NOTNULL, null, null);
+        $table->add_field('problem_j', XMLDB_TYPE_TEXT, null, null, XMLDB_NOTNULL, null, null);
+
+        // Adding keys to table aojproblemlist.
+        $table->add_key('primary', XMLDB_KEY_PRIMARY, array('id'));
+
+        // Conditionally launch create table for aojproblemlist.
+        if (!$dbman->table_exists($table)) {
+            $dbman->create_table($table);
+        }
+
+        // Aojtools savepoint reached.
+        upgrade_mod_savepoint(true, 2010040502, 'aojtools');
+    }
+
+ if ($oldversion < 2010040700) {
+
+        // Define table aojlogin to be created.
+        $table = new xmldb_table('aojlogin');
+
+        // Adding fields to table aojlogin.
+        $table->add_field('id', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, XMLDB_SEQUENCE, null);
+        $table->add_field('userid', XMLDB_TYPE_CHAR, '100', null, null, null, null);
+        $table->add_field('aojid', XMLDB_TYPE_CHAR, '255', null, null, null, null);
+
+        // Adding keys to table aojlogin.
+        $table->add_key('primary', XMLDB_KEY_PRIMARY, array('id'));
+
+        // Conditionally launch create table for aojlogin.
+        if (!$dbman->table_exists($table)) {
+            $dbman->create_table($table);
+        }
+
+        // Aojtools savepoint reached.
+        upgrade_mod_savepoint(true, 2010040700, 'aojtools');
+    }
+
+    if ($oldversion < 2010041000) {
+
+        // Define field point_1 to be added to aojtools.
+        $table = new xmldb_table('aojtools');
+        $field = new xmldb_field('point_1', XMLDB_TYPE_TEXT, null, null, null, null, null, 'problem_j');
+
+        // Conditionally launch add field point_1.
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        $field = new xmldb_field('point_2', XMLDB_TYPE_TEXT, null, null, null, null, null, 'point_1');
+
+        // Conditionally launch add field point_2.
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        $field = new xmldb_field('point_3', XMLDB_TYPE_TEXT, null, null, null, null, null, 'point_2');
+
+        // Conditionally launch add field point_3.
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        $field = new xmldb_field('point_4', XMLDB_TYPE_TEXT, null, null, null, null, null, 'point_3');
+
+        // Conditionally launch add field point_4.
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        $field = new xmldb_field('point_5', XMLDB_TYPE_TEXT, null, null, null, null, null, 'point_4');
+
+        // Conditionally launch add field point_5.
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        $field = new xmldb_field('point_6', XMLDB_TYPE_TEXT, null, null, null, null, null, 'point_5');
+
+        // Conditionally launch add field point_6.
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        $field = new xmldb_field('point_7', XMLDB_TYPE_TEXT, null, null, null, null, null, 'point_6');
+
+        // Conditionally launch add field point_7.
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        $field = new xmldb_field('point_8', XMLDB_TYPE_TEXT, null, null, null, null, null, 'point_7');
+
+        // Conditionally launch add field point_8.
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        $field = new xmldb_field('point_9', XMLDB_TYPE_TEXT, null, null, null, null, null, 'point_8');
+
+        // Conditionally launch add field point_2.
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        $field = new xmldb_field('point_10', XMLDB_TYPE_TEXT, null, null, null, null, null, 'point_9');
+
+        // Conditionally launch add field point_2.
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        // Aojtools savepoint reached.
+        upgrade_mod_savepoint(true, 2010041100, 'aojtools');
+    }
+
+ if ($oldversion < 2010041500) {
+
+        // Define field point_sum to be added to aojproblemlist.
+        $table = new xmldb_table('aojproblemlist');
+        $field = new xmldb_field('point_sum', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0', 'problem_j');
+
+        // Conditionally launch add field point_sum.
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        // Aojtools savepoint reached.
+        upgrade_mod_savepoint(true, 2010041600, 'aojtools');
+    }
+
+
+    // And that's all. Please, examine and understand the 3 example blocks above. Also
+    // it's interesting to look how other modules are using this script. Remember that
+    // the basic idea is to have "blocks" of code (each one being executed only once,
+    // when the module version (version.php) is updated.
+
+    // Lines above (this included) MUST BE DELETED once you get the first version of
+    // yout module working. Each time you need to modify something in the module (DB
+    // related, you'll raise the version and add one upgrade block here.
+
+    // Final return of upgrade result (true, all went good) to Moodle.
+/*
+    if ($oldversion < 2010032700) {
+
+        // Define field id to be added to aojproblemlist.
+        $table = new xmldb_table('aojproblemlist');
+        $field = new xmldb_field('id', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, XMLDB_SEQUENCE, null, null);
+
+        // Conditionally launch add field id.
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+	$field = new xmldb_field('period', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0', 'id');
+
+        // Conditionally launch add field period.
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        $field = new xmldb_field('starttime', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0', 'period');
+
+        // Conditionally launch add field starttime.
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        $field = new xmldb_field('finishtime', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0', 'starttime');
+
+        // Conditionally launch add field finishtime.
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        $field = new xmldb_field('problem_a', XMLDB_TYPE_TEXT, null, null, XMLDB_NOTNULL, null, null, 'finishtime');
+
+        // Conditionally launch add field problem_a.
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        $field = new xmldb_field('problem_b', XMLDB_TYPE_TEXT, null, null, XMLDB_NOTNULL, null, null, 'problem_a');
+
+        // Conditionally launch add field problem_b.
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        $field = new xmldb_field('problem_c', XMLDB_TYPE_TEXT, null, null, XMLDB_NOTNULL, null, null, 'problem_b');
+
+        // Conditionally launch add field problem_c.
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        $field = new xmldb_field('problem_d', XMLDB_TYPE_TEXT, null, null, XMLDB_NOTNULL, null, null, 'problem_c');
+
+        // Conditionally launch add field problem_d.
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        $field = new xmldb_field('problem_e', XMLDB_TYPE_TEXT, null, null, XMLDB_NOTNULL, null, null, 'problem_d');
+
+        // Conditionally launch add field problem_e.
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        $field = new xmldb_field('problem_f', XMLDB_TYPE_TEXT, null, null, XMLDB_NOTNULL, null, null, 'problem_e');
+
+        // Conditionally launch add field problem_f.
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        $field = new xmldb_field('problem_g', XMLDB_TYPE_TEXT, null, null, XMLDB_NOTNULL, null, null, 'problem_f');
+
+        // Conditionally launch add field problem_g.
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        $field = new xmldb_field('problem_h', XMLDB_TYPE_TEXT, null, null, XMLDB_NOTNULL, null, null, 'problem_g');
+
+        // Conditionally launch add field problem_h.
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        $field = new xmldb_field('problem_i', XMLDB_TYPE_TEXT, null, null, XMLDB_NOTNULL, null, null, 'problem_h');
+
+        // Conditionally launch add field problem_i.
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        $field = new xmldb_field('problem_j', XMLDB_TYPE_TEXT, null, null, XMLDB_NOTNULL, null, null, 'problem_i');
+
+        // Conditionally launch add field problem_j.
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+/*        $key = new xmldb_key('primary', XMLDB_KEY_PRIMARY, array('id'));
+
+        // Launch add key primary.
+        $dbman->add_key($table, $key);
+        // Aojtools savepoint reached.
+        upgrade_mod_savepoint(true, 2010032700, 'aojtools');
+    }*/
+
+    return true;
+}

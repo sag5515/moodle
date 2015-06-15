@@ -1,0 +1,27 @@
+<?php
+require('../../config.php');
+ global $USER, $DB;
+
+$aojid = $_POST["aojid"];
+$data=$DB->get_record('aojlogin', array('userid' => $USER->username), '*');
+if(!isset($data)){
+	//$data=$DB->get_record('aojlogin', array('userid' => $USER->username), '*');
+	var_dump($data);
+
+	$record = new stdClass();
+	$record->userid = $USER->username;
+	$record->aojid = $aojid;
+	$DB->insert_record('aojlogin', $record);
+}
+else{
+	
+
+	$input=array(
+	'id'=>$data->id,
+	'userid'=>$USER->username,
+	'aojid'=>$aojid,
+	);
+	$DB->update_record('aojlogin', $input);
+}
+
+?>
